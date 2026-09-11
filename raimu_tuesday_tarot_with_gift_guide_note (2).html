@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>来舞先生のタロットカード診断</title>
+<style>
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;color:#fff;
+  font-family:"Yu Gothic","Hiragino Kaku Gothic ProN",Meiryo,sans-serif;
+  background:
+    radial-gradient(ellipse at 50% -5%,rgba(255,215,160,.24),transparent 28%),
+    radial-gradient(ellipse at 15% 30%,rgba(255,120,150,.12),transparent 30%),
+    radial-gradient(ellipse at 85% 42%,rgba(255,90,130,.10),transparent 28%),
+    linear-gradient(90deg,rgba(55,0,14,.48),transparent 18%,transparent 82%,rgba(55,0,14,.48)),
+    repeating-linear-gradient(90deg,rgba(255,255,255,.018) 0,rgba(255,255,255,.018) 2px,transparent 2px,transparent 10px),
+    linear-gradient(180deg,#5f071d 0%,#9d173a 30%,#7c0d2b 62%,#3e0618 100%);
+  min-height:100vh;
+}
+.tarot-page{width:100%;max-width:920px;margin:0 auto;padding:38px 14px 72px}
+.hero{text-align:center;padding:26px 15px 20px}
+.hero-moon{color:#f0d45e;font-size:28px;margin-bottom:6px}
+.hero h1{
+  margin:0;color:#f4df8b;font-family:"Yu Mincho","Hiragino Mincho ProN",serif;
+  font-size:clamp(28px,7vw,48px);font-weight:400;letter-spacing:.12em
+}
+.hero-sub{margin-top:8px;color:rgba(255,255,255,.6);font:11px Georgia,serif;letter-spacing:.22em}
+.hero-message{margin-top:18px;font-size:14px;line-height:1.8;color:#e5efeb}
+
+.howto{
+  max-width:650px;margin:8px auto 25px;padding:16px;
+  border:1px solid rgba(222,192,82,.3);border-radius:18px;background:rgba(74,0,22,.38)
+}
+.howto-title{margin-bottom:12px;text-align:center;color:#f1dc88;font-weight:700}
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.step{padding:12px 5px;text-align:center;border-radius:12px;background:rgba(62,0,20,.46);font-size:12px;line-height:1.6}
+.step-number{display:block;margin-bottom:3px;color:#f0d55e;font-size:20px;font-weight:700}
+.position-note{margin-top:10px;text-align:center;color:rgba(255,255,255,.62);font-size:11px}
+
+.deck-label{margin:30px 0 14px;text-align:center;color:#d8bd60;font:12px Georgia,serif;letter-spacing:.17em}
+.deck{display:grid;grid-template-columns:repeat(11,1fr);gap:7px;max-width:780px;margin:0 auto}
+.deck-card{cursor:pointer;transition:transform .22s ease,opacity .25s ease,filter .25s ease;aspect-ratio:242/544;border:1px solid rgba(214,181,66,.65);border-radius:6px;
+  background:url("https://wp.app-clear.com/wp-content/uploads/2026/03/uramenn.jpg") center/100% 100% no-repeat;
+  box-shadow:0 4px 8px rgba(0,0,0,.25)
+}
+
+.draw-area{margin:30px 0;text-align:center}
+.draw-button{
+  min-height:52px;padding:14px 42px;border:1px solid #e1c65e;border-radius:999px;
+  color:#5a0b24;background:linear-gradient(135deg,#faeaa6,#cda940);
+  box-shadow:0 7px 20px rgba(0,0,0,.3);cursor:pointer;font-size:15px;font-weight:700;letter-spacing:.06em
+}
+.draw-button:hover:not(:disabled){transform:translateY(-2px)}
+.draw-button:disabled{opacity:.5;cursor:default}
+.lock-message{display:none;max-width:620px;margin:0 auto 24px;padding:14px 16px;text-align:center;border:1px solid rgba(222,192,82,.3);border-radius:14px;background:rgba(255,255,255,.06);color:#f4df8b;font-size:14px;font-weight:700}
+.lock-message.show{display:block}
+
+.result-section{display:none;flex-direction:column;align-items:center;padding-top:10px}
+.result-section.show{display:flex}
+.card-scene{width:205px;aspect-ratio:242/420;perspective:1200px}
+.result-card{
+  position:relative;width:100%;height:100%;transform-style:preserve-3d;
+  transition:transform 1.7s cubic-bezier(.18,.8,.22,1)
+}
+.result-card.open{transform:rotateY(1260deg)}
+.card-face{position:absolute;inset:0;overflow:hidden;border-radius:14px;backface-visibility:hidden}
+.card-back{
+  border:2px solid #d1ae3c;background:url("https://wp.app-clear.com/wp-content/uploads/2026/03/uramenn.jpg") center/100% 100% no-repeat;
+  box-shadow:0 12px 30px rgba(0,0,0,.4)
+}
+.card-front{transform:rotateY(180deg);padding:0;border:2px solid #b8902d;background:#2a0712;box-shadow:0 12px 30px rgba(0,0,0,.4)}
+.front-inner{width:100%;height:100%;display:block;transition:transform .65s ease}
+.front-inner.reversed{transform:rotate(180deg)}
+.card-image{width:100%;height:100%;display:block;object-fit:cover}
+.card-number{font:700 23px Georgia,serif}
+.card-symbol{margin:auto;font-size:80px;line-height:1}
+.card-name{width:90%;padding-top:10px;text-align:center;border-top:1px solid #b99335;font:700 14px Georgia,serif}
+
+.result-info{margin-top:17px;text-align:center}
+.your-card{color:rgba(255,255,255,.5);font:10px Georgia,serif;letter-spacing:.18em}
+.result-info h2{margin:5px 0 9px;color:#f3dc80;font-family:"Yu Mincho",serif;font-size:24px;font-weight:400}
+.position-badge{
+  display:inline-block;padding:6px 16px;border:1px solid rgba(231,203,92,.45);
+  border-radius:999px;color:#fff3b2;background:rgba(73,0,23,.52);font-size:13px;font-weight:700
+}
+
+.next-action{
+  display:none;width:100%;max-width:620px;margin-top:28px;padding:20px;
+  border:1px solid rgba(222,192,82,.32);border-radius:20px;background:rgba(73,0,23,.52);
+  animation:actionIn .65s ease both
+}
+.next-action.show{display:block}
+.next-title{margin-bottom:16px;text-align:center;color:#f4df8b;font-size:19px;font-weight:700}
+.send-items{display:grid;gap:9px}
+.send-item{padding:13px 15px;border-radius:13px;background:rgba(58,0,18,.50)}
+.send-label{display:block;margin-bottom:3px;color:rgba(255,255,255,.55);font-size:11px;font-weight:700}
+.send-value{color:#fff;font-size:16px;font-weight:700}
+.free-reading{margin-top:16px;text-align:center;font-size:13px;line-height:1.8}
+.free-reading strong{color:#f3d965}
+.point{margin-top:13px;padding:11px 13px;border-radius:12px;background:rgba(58,0,18,.42);font-size:12px;line-height:1.7}
+
+.advisor{display:grid;grid-template-columns:76px 1fr;gap:14px;align-items:center;margin-top:19px;padding-top:18px;border-top:1px solid rgba(255,255,255,.12)}
+.advisor-image{width:86px;height:86px;display:grid;place-items:center;overflow:hidden;border:2px solid #d4b74e;border-radius:50%;background:rgba(255,255,255,.08)}
+.advisor-image img{width:100%;height:100%;display:block;object-fit:cover;object-position:center top}
+.advisor-name{color:#f3df91;font-size:17px;font-weight:700}
+.advisor-text{margin-top:4px;color:rgba(255,255,255,.62);font-size:11px;line-height:1.6}
+.profile-area{margin-top:16px;text-align:center}
+.profile-button{
+  width:min(100%,360px);min-height:50px;display:inline-flex;align-items:center;justify-content:center;
+  padding:13px 25px;border-radius:999px;color:#5a0b24;background:linear-gradient(135deg,#faeaa6,#cda940);
+  text-decoration:none;font-weight:700
+}
+.profile-button:hover{transform:translateY(-2px)}
+
+
+.copy-line{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+.copy-line .send-value{flex:1;min-width:180px}
+.copy-button{flex:0 0 auto;min-height:40px;padding:8px 14px;border:1px solid rgba(247,218,126,.65);border-radius:999px;background:linear-gradient(135deg,#fff0bd,#d9ae48);color:#65112c;font-size:12px;font-weight:800;cursor:pointer;box-shadow:0 4px 12px rgba(39,0,12,.24)}
+.copy-button:active{transform:translateY(1px)}
+.copy-button.copied{background:#fff7dc}
+.copy-feedback{min-height:18px;margin-top:6px;color:#f7dea0;font-size:11px;font-weight:700}
+
+
+.deck-card:hover{transform:translateY(-5px) scale(1.03)}
+.deck-card:focus-visible{outline:3px solid #f6dfa0;outline-offset:3px}
+.deck-card.chosen{transform:translateY(-7px) scale(1.05);box-shadow:0 0 0 2px #f4d77b,0 10px 24px rgba(0,0,0,.38)}
+.deck.locked .deck-card{cursor:default}
+.deck.locked .deck-card:not(.chosen){opacity:.32;filter:saturate(.6)}
+.select-guide{color:#f5e3ae;font-size:14px;font-weight:800}
+
+
+.retry-area{display:none;margin:18px 0 4px;text-align:center}
+.retry-area.show{display:block}
+.retry-button{
+  min-height:46px;padding:11px 24px;border:1px solid rgba(247,218,126,.65);
+  border-radius:999px;background:rgba(255,255,255,.08);color:#f8e6ad;
+  font-weight:800;cursor:pointer
+}
+.retry-button:hover{background:rgba(255,255,255,.14)}
+
+@keyframes actionIn{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+@media(max-width:700px){.deck{grid-template-columns:repeat(7,1fr);gap:6px}}
+@media(max-width:480px){
+  .tarot-page{padding-left:10px;padding-right:10px}
+  .deck{grid-template-columns:repeat(6,1fr);gap:5px}
+  .step{padding-left:2px;padding-right:2px;font-size:10px}
+  .card-scene{width:190px}
+  .next-action{padding:16px 13px}
+}
+@media(prefers-reduced-motion:reduce){
+  .result-card,.front-inner{transition:none}
+  .result-card.open{transform:rotateY(180deg)}
+  .next-action{animation:none}
+}
+
+/* Smartphone-first title sizing */
+.main-title{
+  margin: 10px auto 12px;
+  text-align:center;
+  line-height:1.2;
+}
+.main-title .limited-title{
+  display:block;
+  font-size:14px;
+  font-weight:800;
+  letter-spacing:.08em;
+  margin-bottom:7px;
+}
+.main-title .teacher-title{
+  display:block;
+  font-size:19px;
+  font-weight:800;
+  margin-bottom:3px;
+}
+.main-title .tarot-title{
+  display:block;
+  font-size:27px;
+  font-weight:900;
+  letter-spacing:.02em;
+}
+@media (max-width:380px){
+  .main-title .limited-title{font-size:13px}
+  .main-title .teacher-title{font-size:18px}
+  .main-title .tarot-title{font-size:24px}
+}
+@media (min-width:700px){
+  .main-title .limited-title{font-size:16px}
+  .main-title .teacher-title{font-size:22px}
+  .main-title .tarot-title{font-size:32px}
+}
+
+
+/* ギフト送信手順 */
+.gift-guide{
+  margin-top:18px;
+  padding-top:18px;
+  border-top:1px solid rgba(255,255,255,.14);
+}
+.gift-guide-title{
+  text-align:center;
+  color:#f4df8b;
+  font-size:17px;
+  font-weight:800;
+  margin-bottom:12px;
+}
+.gift-guide-step{
+  margin-top:14px;
+  padding:12px;
+  border-radius:14px;
+  background:rgba(58,0,18,.42);
+  border:1px solid rgba(222,192,82,.18);
+}
+.gift-guide-step:first-of-type{margin-top:0}
+.gift-guide-label{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  margin-bottom:9px;
+  color:#fff3c7;
+  font-size:13px;
+  font-weight:800;
+  line-height:1.5;
+}
+.gift-guide-num{
+  flex:0 0 auto;
+  width:28px;
+  height:28px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  border-radius:50%;
+  background:linear-gradient(135deg,#f7df88,#c99a35);
+  color:#66132d;
+  font-weight:900;
+}
+.gift-guide img{
+  width:100%;
+  height:auto;
+  display:block;
+  border-radius:10px;
+}
+
+
+.gift-guide-note{
+  margin:-1px 0 10px 36px;
+  padding:8px 10px;
+  border-radius:9px;
+  background:rgba(255,240,195,.09);
+  color:#ffe7a3;
+  font-size:12px;
+  font-weight:700;
+  line-height:1.6;
+  text-align:left;
+}
+
+</style>
+</head>
+<body>
+<main class="tarot-page">
+
+<header class="hero">
+  <div class="hero-moon">☾</div>
+  <h1 class="main-title">
+  <span class="limited-title">＼ 火曜日限定 ／</span>
+  <span class="teacher-title">来舞先生の</span>
+  <span class="tarot-title">タロットカード診断</span>
+</h1>
+  <div class="hero-sub">MAJOR ARCANA</div>
+  <div class="hero-message">直感で気になるカードを<br>1枚選んでみよう🔮</div>
+</header>
+
+<section class="howto">
+  <div class="howto-title">遊び方はかんたん3STEP！</div>
+  <div class="steps">
+    <div class="step"><span class="step-number">①</span>好きなカードを<br>1枚選ぶ！</div>
+    <div class="step"><span class="step-number">②</span>カード名と<br>○・●をチェック！</div>
+    <div class="step"><span class="step-number">③</span>同じギフト＋<br>合言葉を送る🎁</div>
+  </div>
+  <div class="position-note">○＝正位置 ／ ●＝逆位置</div>
+</section>
+
+<div class="deck-label">― 気になるカードを1枚タップ ―</div>
+<div class="deck" id="deck"></div>
+
+<div class="draw-area">
+  <div class="select-guide" id="selectGuide">直感で「これ！」と思うカードをタップしてね ✨</div>
+</div>
+
+<div class="lock-message show" id="lockMessage">🔮 カードは1回だけ引くことができます</div>
+
+<section class="result-section" id="resultSection" aria-live="polite">
+  <div class="card-scene">
+    <div class="result-card" id="resultCard">
+      <div class="card-face card-back"></div>
+      <div class="card-face card-front">
+        <div class="front-inner" id="frontInner">
+          <img id="cardImage" class="card-image" src="" alt="">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="result-info">
+    <div class="your-card">YOUR CARD</div>
+    <h2 id="resultName"></h2>
+    <div class="position-badge" id="positionBadge"></div>
+  </div>
+<section class="next-action" id="nextAction">
+    <div class="next-title">👇 この2つを先生に送ってね！</div>
+
+    <div class="send-items">
+      <div class="send-item">
+        <span class="send-label">🎁 送るギフト</span>
+        <span class="send-value" id="giftName"></span>
+      </div>
+      <div class="send-item">
+        <span class="send-label">💬 合言葉</span>
+        <div class="copy-line">
+          <span class="send-value" id="keyword"></span>
+          <button type="button" class="copy-button" id="copyKeyword">ワンタップでコピー</button>
+        </div>
+        <div class="copy-feedback" id="copyFeedback" aria-live="polite"></div>
+      </div>
+    </div>
+
+    <div class="free-reading">
+      ギフト＋合言葉を送ると<br>
+      先生から <strong>無料の一言鑑定をプレゼント🎁</strong>
+    </div>
+
+    <div class="point">
+      💡 <strong>「恋愛について」「仕事について」</strong>など、
+      知りたいことも一緒に送るとGOOD！
+    </div>
+
+    
+    <section class="gift-guide">
+      <div class="gift-guide-title">🎁 ギフトと合言葉の送り方</div>
+
+      <div class="gift-guide-step">
+        <div class="gift-guide-label">
+          <span class="gift-guide-num">1</span>
+          <span>出たカードと同じ数字のギフトをタップ！</span>
+        </div>
+        <img src="https://wp.app-clear.com/wp-content/uploads/2026/09/連携ログインについて図解-17.jpg" alt="同じ数字のギフトを選ぶ手順">
+      </div>
+
+      <div class="gift-guide-step">
+        <div class="gift-guide-label">
+          <span class="gift-guide-num">2</span>
+          <span>ギフト送信後、合言葉をチャットで送信！</span>
+        </div>
+        <div class="gift-guide-note">※逆位置か正位置かで意味が変わるよ！<br>必ず上にある文章をコピーしてそのまま貼り付けてね！</div>
+        <img src="https://wp.app-clear.com/wp-content/uploads/2026/09/連携ログインについて図解-16.jpg" alt="ギフト送信後に合言葉を送る手順">
+      </div>
+    </section>
+
+    <div class="advisor">
+      <div class="advisor-image"><img src="https://d3toe5vh1rjlve.cloudfront.net/2026/08/19/694a36d3e967de217fe57f9e_profile_1787119679707.jpg" alt="💎来舞先生💎💕恋愛・復縁"></div>
+      <div>
+        <div class="advisor-name">💎来舞先生💎💕恋愛・復縁</div>
+        <div class="advisor-text">プロフィールから先生のチャットへ進めます</div>
+      </div>
+    </div>
+
+    <div class="profile-area">
+      <a href="https://app-clear.com/open?act=otherprofile-694a36d3e967de217fe57f9e" class="profile-button" id="profileButton">先生のプロフィールを見る</a>
+    </div>
+  </section>
+</section>
+
+</main>
+
+<script>
+const tarotCards = [
+  ["0","THE FOOL","愚者","https://wp.app-clear.com/wp-content/uploads/2026/03/0　愚者.jpg"],
+  ["I","THE MAGICIAN","魔術師","https://wp.app-clear.com/wp-content/uploads/2026/03/1　魔術師.jpg"],
+  ["II","THE HIGH PRIESTESS","女司祭","https://wp.app-clear.com/wp-content/uploads/2026/03/2　女司祭.jpg"],
+  ["III","THE EMPRESS","女教皇","https://wp.app-clear.com/wp-content/uploads/2026/03/3　女教皇.jpg"],
+  ["IV","THE EMPEROR","皇帝","https://wp.app-clear.com/wp-content/uploads/2026/03/4　皇帝.jpg"],
+  ["V","THE HIEROPHANT","司祭","https://wp.app-clear.com/wp-content/uploads/2026/03/5　司祭.jpg"],
+  ["VI","THE LOVERS","恋人","https://wp.app-clear.com/wp-content/uploads/2026/03/6　恋人.jpg"],
+  ["VII","THE CHARIOT","戦車","https://wp.app-clear.com/wp-content/uploads/2026/03/07_chariot_726x1260.jpg"],
+  ["VIII","STRENGTH","力","https://wp.app-clear.com/wp-content/uploads/2026/03/8-ストレングス.jpg"],
+  ["IX","THE HERMIT","隠者","https://wp.app-clear.com/wp-content/uploads/2026/03/9　隠者.jpg"],
+  ["X","WHEEL OF FORTUNE","運命の車輪","https://wp.app-clear.com/wp-content/uploads/2026/03/10　運命の車輪.jpg"],
+  ["XI","JUSTICE","正義","https://wp.app-clear.com/wp-content/uploads/2026/03/11　正義.jpg"],
+  ["XII","THE HANGED MAN","吊られた男","https://wp.app-clear.com/wp-content/uploads/2026/03/12　吊られた男.jpg"],
+  ["XIII","DEATH","死","https://wp.app-clear.com/wp-content/uploads/2026/03/13　死.jpg"],
+  ["XIV","TEMPERANCE","節制","https://wp.app-clear.com/wp-content/uploads/2026/03/14　節制.jpg"],
+  ["XV","THE DEVIL","悪魔","https://wp.app-clear.com/wp-content/uploads/2026/03/15　悪魔.jpg"],
+  ["XVI","THE TOWER","塔","https://wp.app-clear.com/wp-content/uploads/2026/03/16　塔.jpg"],
+  ["XVII","THE STAR","星","https://wp.app-clear.com/wp-content/uploads/2026/03/17　スター.jpg"],
+  ["XVIII","THE MOON","月","https://wp.app-clear.com/wp-content/uploads/2026/03/18　月.jpg"],
+  ["XIX","THE SUN","太陽","https://wp.app-clear.com/wp-content/uploads/2026/03/19　太陽.jpg"],
+  ["XX","JUDGEMENT","審判","https://wp.app-clear.com/wp-content/uploads/2026/03/20　審判.jpg"],
+  ["XXI","THE WORLD","世界","https://wp.app-clear.com/wp-content/uploads/2026/03/21　世界.jpg"]
+];
+
+const deck = document.getElementById("deck");
+const selectGuide = document.getElementById("selectGuide");
+const resultSection = document.getElementById("resultSection");
+const resultCard = document.getElementById("resultCard");
+const frontInner = document.getElementById("frontInner");
+const cardImage = document.getElementById("cardImage");
+const resultName = document.getElementById("resultName");
+const positionBadge = document.getElementById("positionBadge");
+const nextAction = document.getElementById("nextAction");
+const giftName = document.getElementById("giftName");
+const keyword = document.getElementById("keyword");
+const copyKeyword = document.getElementById("copyKeyword");
+const copyFeedback = document.getElementById("copyFeedback");
+
+let hasDrawn = false;
+const STORAGE_KEY = "raimu_tuesday_tarot_once_v1";
+const LOCK_MS = 24 * 60 * 60 * 1000;
+
+function makeShuffledIndexes() {
+  const arr = tarotCards.map((_, i) => i);
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function renderDeck() {
+  deck.innerHTML = "";
+  const shuffledIndexes = makeShuffledIndexes();
+
+  shuffledIndexes.forEach((tarotIndex, slotIndex) => {
+    const el = document.createElement("button");
+    el.type = "button";
+    el.className = "deck-card";
+    el.dataset.tarotIndex = tarotIndex;
+    el.dataset.slotIndex = slotIndex;
+    el.setAttribute("aria-label", (slotIndex + 1) + "枚目のカードを選ぶ");
+    deck.appendChild(el);
+  });
+}
+
+function showResult(selectedCard, isReversed) {
+  const mark = isReversed ? "●" : "○";
+  const position = isReversed ? "逆位置" : "正位置";
+
+  cardImage.src = selectedCard[3];
+  cardImage.alt = selectedCard[2] + "のタロットカード";
+  frontInner.classList.toggle("reversed", isReversed);
+
+  resultName.textContent = selectedCard[1] + " ― " + selectedCard[2];
+  positionBadge.textContent = mark + " " + position;
+  giftName.textContent = "「" + tarotCards.indexOf(selectedCard) + "：" + selectedCard[2] + "」";
+  keyword.textContent = mark + "今の私に必要なことは？";
+
+  resultSection.classList.add("show");
+  resultCard.classList.remove("open");
+  nextAction.classList.remove("show");
+
+  setTimeout(() => resultSection.scrollIntoView({behavior:"smooth",block:"center"}), 120);
+  setTimeout(() => resultCard.classList.add("open"), 450);
+  setTimeout(() => {
+    nextAction.classList.add("show");
+  }, 2400);
+}
+
+function selectCard(slotIndex, tarotIndex) {
+  if (hasDrawn) return;
+  hasDrawn = true;
+
+  const selectedCard = tarotCards[tarotIndex];
+  const isReversed = Math.random() < 0.5;
+
+  localStorage.setItem(STORAGE_KEY, JSON.stringify({
+    drawnAt: Date.now(),
+    tarotIndex: tarotIndex,
+    slotIndex: slotIndex,
+    isReversed: isReversed
+  }));
+
+  deck.classList.add("locked");
+  [...deck.children].forEach((el, i) => {
+    el.disabled = true;
+    el.classList.toggle("chosen", i === slotIndex);
+  });
+
+  selectGuide.textContent = "あなたが選んだカードはこちらです";
+  showResult(selectedCard, isReversed);
+}
+
+deck.addEventListener("click", function(e) {
+  const card = e.target.closest(".deck-card");
+  if (!card || hasDrawn) return;
+  selectCard(Number(card.dataset.slotIndex), Number(card.dataset.tarotIndex));
+});
+
+
+copyKeyword.addEventListener("click", async function() {
+  const text = keyword.textContent.trim();
+  if (!text) return;
+
+  let copied = false;
+  if (navigator.clipboard && window.isSecureContext) {
+    try {
+      await navigator.clipboard.writeText(text);
+      copied = true;
+    } catch (e) {}
+  }
+
+  if (!copied) {
+    const area = document.createElement("textarea");
+    area.value = text;
+    area.setAttribute("readonly", "");
+    area.style.position = "absolute";
+    area.style.left = "-9999px";
+    document.body.appendChild(area);
+    area.select();
+    try { copied = document.execCommand("copy"); } catch (e) {}
+    document.body.removeChild(area);
+  }
+
+  if (copied) {
+    copyKeyword.textContent = "コピーしました ✓";
+    copyKeyword.classList.add("copied");
+    copyFeedback.textContent = "そのまま先生のチャットに貼り付けてね！";
+    setTimeout(function() {
+      copyKeyword.textContent = "ワンタップでコピー";
+      copyKeyword.classList.remove("copied");
+      copyFeedback.textContent = "";
+    }, 2200);
+  } else {
+    copyFeedback.textContent = "コピーできませんでした。合言葉を長押ししてコピーしてください。";
+  }
+});
+
+
+function restoreSavedDraw() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return false;
+    const saved = JSON.parse(raw);
+    if (!saved || !saved.drawnAt || Date.now() - saved.drawnAt >= LOCK_MS) {
+      localStorage.removeItem(STORAGE_KEY);
+      return false;
+    }
+
+    hasDrawn = true;
+    renderDeck();
+    deck.classList.add("locked");
+    [...deck.children].forEach(el => el.disabled = true);
+    selectGuide.textContent = "本日のカードはすでに引いています";
+    const selectedCard = tarotCards[Number(saved.tarotIndex)];
+    showResult(selectedCard, Boolean(saved.isReversed));
+    return true;
+  } catch (e) {
+    localStorage.removeItem(STORAGE_KEY);
+    return false;
+  }
+}
+
+if (!restoreSavedDraw()) {
+  renderDeck();
+}
+
+</script>
+</body>
+</html>
